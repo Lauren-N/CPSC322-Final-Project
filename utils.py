@@ -48,16 +48,3 @@ def get_column(table, header, col_name):
         col.append(row[col_index])
 
     return col
-
-def compute_slope_intercept(x,y):
-    n = len(x)
-    meanx = sum(x) / len(x)
-    meany = sum(y) / len(y)
-    
-    numerator = sum([(x[i] - meanx) * (y[i] - meany) for i in range(n)])
-    denominator = sum([(x[i] - meanx) ** 2 for i in range(n)])
-
-    m = numerator/denominator
-    # y = mx + b -> b = y - mx
-    b = meany - m * meanx
-    return m,b
