@@ -57,7 +57,7 @@ class MyPyTable:
         m_cols = len(self.column_names) # m num of elements in each list in data list (cols)
         return n_rows, m_cols
 
-    def get_column(self, col_identifier, include_missing_values=True):
+    def get_column(self, col_identifier, include_missing_values=False):
         """Extracts a column from the table data as a list.
 
         Args:
@@ -72,26 +72,26 @@ class MyPyTable:
         Notes:
             Raise ValueError on invalid col_identifier
         """
-        if  isinstance(col_identifier, int):
-            # then is column index
+        if isinstance(col_identifier, int):
+            # if the column identifier is an index
             col_index = col_identifier
+            if col_index < 0 or col_index >= len(self.column_names):
+                raise ValueError(f"Invalid column index: {col_index}")
         else:
-            # then is string for column name
-            for i in range(len(self.column_names)) :
-                if self.column_names[i] == col_identifier:
-                    # then i is index
-                    col_index = i
-                #else then continue looking through column_names
+            # if the column identifier is a string (column name)
+            if col_identifier not in self.column_names:
+                raise ValueError(f"Invalid column name: {col_identifier}")
+            col_index = self.column_names.index(col_identifier)
+
         col = []
         if include_missing_values:
             # if include_missing_values is True then add all rows
             for row in self.data:
                 col.append(row[col_index])
         else:
-            # then include_missing_values if False
+            # if include_missing_values is False, only append non-missing values
             for row in self.data:
-                if row[col_index] != "":
-                    # only append if not a missing value
+                if row[col_index] != "" and row[col_index] != "NA":
                     col.append(row[col_index])
 
         return col
@@ -450,3 +450,10 @@ class MyPyTable:
         key_index = header.index(key)
         value = row[key_index]
         return value
+    
+    def update_column(self, col_name, new_values):
+        """Updates the values of a specific column."""
+        col_index = self.column_names.index(col_name)
+        for i, row in enumerate(self.data):
+            row[col_index] = new_values[i]
+
