@@ -97,31 +97,25 @@ def kfold_split(X, n_splits=5, random_state=None, shuffle=False):
             https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
     """
     n_samples = len(X)
-    indices = np.arange(n_samples)
-
-    # If shuffle=True, then need to randomize
+    indices = list(range(n_samples))
+    
+    # Use randomize_in_place if shuffling is requested
     if shuffle:
-        if random_state is not None:
-            np.random.seed(random_state)
-        np.random.shuffle(indices)
+        myutils.randomize_in_place(indices)
+    # Calculate the fold sizes
+    fold_sizes = [(n_samples // n_splits) + (1 if i < n_samples % n_splits else 0) for i in range(n_splits)]
 
-    fold_sizes = [n_samples // n_splits] * n_splits
-    for i in range(n_samples % n_splits):
-        fold_sizes[i] += 1
-
-    # Initializing index and folds to iterate through folds
-    current = 0
+    # Create folds
     folds = []
-
-    # Performing folds
+    current = 0
     for fold_size in fold_sizes:
-        start, stop = current, current + fold_size
-        test_indices = indices[start:stop]
-        train_indices = np.concatenate((indices[:start], indices[stop:]))
-        folds.append((train_indices.tolist(), test_indices.tolist()))
-        current = stop
+        test_indices = indices[current:current + fold_size]
+        train_indices = indices[:current] + indices[current + fold_size:]
+        folds.append((train_indices, test_indices))
+        current += fold_size
 
     return folds
+
 
 def bootstrap_sample(X, y=None, n_samples=None, random_state=None):
     """Split dataset into bootstrapped training set and out of bag test set.
