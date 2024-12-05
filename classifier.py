@@ -1,5 +1,71 @@
 import numpy as np
 
+
+class MyRandomForestClassifier:
+    def __init__(self, n_classifiers=10, max_features=None, n_bootstrap=10):
+        """
+        Initializer for MyRandomForestClassifier.
+        """
+        self.n_classifiers = n_classifiers
+        self.max_features = max_features
+        self.n_bootstrap = n_bootstrap
+        self.classifiers = []
+        self.feature_subsets = []
+
+    def compute_bootstrapped_sample(self, table):
+        n = len(table)
+        # np.random.randint(low, high) returns random integers from low (inclusive) to high (exclusive)
+        sampled_indexes = [np.random.randint(0, n) for _ in range(n)]
+        sample = [table[index] for index in sampled_indexes]
+        out_of_bag_indexes = [index for index in list(range(n)) if index not in sampled_indexes]
+        out_of_bag_sample = [table[index] for index in out_of_bag_indexes]
+        return sample, out_of_bag_sample
+
+    def compute_random_subset(self, values, num_values):
+        values_copy = values[:] # shallow copy
+        np.random.shuffle(values_copy) # in place shuffle
+        return values_copy[:num_values] 
+
+    def _train_decision_tree(self, X, y, feature_indices):
+        feature_counts = {}
+        for row, label in zip(X, y):
+            key = tuple(row[i] for i in feature_indices)
+            if key not in feature_counts:
+                feature_counts[key] = {}
+            if label not in feature_counts[key]:
+                feature_counts[key][label] = 0
+            feature_counts[key][label] += 1
+        return feature_counts
+
+    def fit(self, X_train, y_train):
+        n_features = len(X_train[0])
+        for _ in range(self.n_bootstrap):
+            # Create bootstrap sample
+            X_sample, _ = self.compute_bootstrapped_sample(X_train)
+            y_sample, _ = self.compute_bootstrapped_sample(y_train)
+
+            # Select random feature subset
+            feature_indices = self.compute_random_subset(list(range(n_features)), self.max_features)
+            self.feature_subsets.append(feature_indices)
+
+            # Train a decision tree
+            tree = self._train_decision_tree(X_sample, y_sample, feature_indices)
+            self.classifiers.append(tree)
+
+    def predict(self, X_test):
+        predictions = []
+        for row in X_test:
+            votes = []
+            for tree, feature_indices in zip(self.classifiers, self.feature_subsets):
+                pred = self._predict_tree(tree, row, feature_indices)
+                if pred is not None:
+                    votes.append(pred)
+            if votes:
+                predictions.append(max(set(votes), key=votes.count))
+            else:
+                predictions.append(None)
+        return predictions
+
 class MyKNeighborsClassifier:
     """Represents a simple k nearest neighbors classifier.
 
