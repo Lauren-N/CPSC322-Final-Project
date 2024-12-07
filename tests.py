@@ -447,7 +447,36 @@ tree_iphone = \
         ]
 
 def test_random_forest_classifier_fit():
-    pass
+    # dataset from decision trees
+    header = ["att0", "att1", "att2", "att3"]
+    attribute_domains = {"att0": ["Junior", "Mid", "Senior"], 
+            "att1": ["Java", "Python", "R"],
+            "att2": ["no", "yes"], 
+            "att3": ["no", "yes"]}
+    X = [
+        ["Senior", "Java", "no", "no"],
+        ["Senior", "Java", "no", "yes"],
+        ["Mid", "Python", "no", "no"],
+        ["Junior", "Python", "no", "no"],
+        ["Junior", "R", "yes", "no"],
+        ["Junior", "R", "yes", "yes"],
+        ["Mid", "R", "yes", "yes"],
+        ["Senior", "Python", "no", "no"],
+        ["Senior", "R", "yes", "no"],
+        ["Junior", "Python", "yes", "no"],
+        ["Senior", "Python", "yes", "yes"],
+        ["Mid", "Python", "no", "yes"],
+        ["Mid", "Java", "yes", "no"],
+        ["Junior", "Python", "no", "yes"]
+    ]
+
+    y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
+
+    rf = MyRandomForestClassifier(n_classifiers=3, max_features=2, n_bootstrap=3)
+
+    rf.fit(X, y)
+
+    print(rf.classifiers)
 
 def test_random_forest_classifier_predict():
     pass
