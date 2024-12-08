@@ -83,8 +83,8 @@ class MyDecisionTreeClassifier:
         Returns:
             dict: A dictionary where keys are attribute values and values are lists of instances that have the corresponding attribute value.
         """
-
-        att_index = self.header.index(attribute)
+        str_attribute = str(attribute)
+        att_index = self.header.index(str_attribute)
         att_domain = self.attribute_domains[attribute]
         partitions = {}
         for att_value in att_domain: # "Junior" -> "Mid" -> "Senior"
@@ -211,8 +211,8 @@ class MyRandomForestClassifier:
         return sample, out_of_bag_sample
 
     def compute_random_subset(self, values, num_values):
-        values_copy = values[:]  # shallow copy
-        np.random.shuffle(values_copy)  # in place shuffle
+        values_copy = values[:]  
+        np.random.shuffle(values_copy)
         return values_copy[:num_values]
 
     def fit(self, X_train, y_train):
@@ -244,11 +244,21 @@ class MyRandomForestClassifier:
             self.classifiers.append(tree_classifier.tree)
 
     def _predict_tree(self, tree, row, feature_indices):
-        key = tuple(row[i] for i in feature_indices)
-        if key in tree:
-            label_counts = tree[key]
-            return max(label_counts, key=label_counts.get)
-        return None
+        # Traverse the decision tree
+        while tree[0] == "Attribute":
+            att_index = feature_indices[int(tree[1])] 
+            value = row[att_index]
+
+            matched = False
+            for i in range(2, len(tree), 2):
+                if tree[i][1] == value: 
+                    tree = tree[i + 1]
+                    matched = True
+                    break
+            if not matched:
+                return None 
+        return tree[1] 
+
 
     def predict(self, X):
         predictions = []

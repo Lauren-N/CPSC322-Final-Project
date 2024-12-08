@@ -477,6 +477,18 @@ def test_random_forest_classifier_fit():
     rf.fit(X, y)
 
     print(rf.classifiers)
+    
+        # Training example
+    X_train = [
+        ['red', 'small', 1],
+        ['blue', 'large', 2],
+        ['green', 'medium', 3]
+    ]
+    y_train = ['apple', 'berry', 'cucumber']
+
+    # Predict example
+    row_to_predict = ['blue', 'large', 2]`
+
 
 def test_random_forest_classifier_predict():
     pass
