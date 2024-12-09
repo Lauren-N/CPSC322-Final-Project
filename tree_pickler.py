@@ -1,4 +1,7 @@
-import pickle # a standard library
+import pickle # standard library
+
+# asthma_header = ["BMI", "Smoking", "PhysicalActivity", "LungFunctionFEV1"]
+# asthma_tree = tree
 
 # pickling is used for object serialization and deserialization
 # pickle: write a binary representation of an object to a file (for use later...)
