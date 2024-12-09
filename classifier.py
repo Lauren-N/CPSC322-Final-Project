@@ -83,8 +83,8 @@ class MyDecisionTreeClassifier:
         Returns:
             dict: A dictionary where keys are attribute values and values are lists of instances that have the corresponding attribute value.
         """
-        str_attribute = str(attribute)
-        att_index = self.header.index(str_attribute)
+
+        att_index = self.header.index(attribute)
         att_domain = self.attribute_domains[attribute]
         partitions = {}
         for att_value in att_domain: # "Junior" -> "Mid" -> "Senior"
@@ -191,87 +191,187 @@ class MyDecisionTreeClassifier:
             tree.append(value_subtree)
         return tree
 
-class MyRandomForestClassifier:
-    def __init__(self, n_classifiers=10, max_features=None, n_bootstrap=10):
-        """
-        Initializer for MyRandomForestClassifier.
-        """
-        self.n_classifiers = n_classifiers
-        self.max_features = max_features
-        self.n_bootstrap = n_bootstrap
-        self.classifiers = []
-        self.feature_subsets = []
 
+
+    def fit(self, X_train, y_train):
+        """Fits a decision tree classifier to X_train and y_train using the TDIDT
+        (top down induction of decision tree) algorithm.
+        Args:
+            X_train(list of list of obj): The list of training instances (samples).
+                The shape of X_train is (n_train_samples, n_features)
+            y_train(list of obj): The target y values (parallel to X_train)
+                The shape of y_train is n_train_samples
+        Notes:
+            Since TDIDT is an eager learning algorithm, this method builds a decision tree model
+                from the training data.
+            Build a decision tree using the nested list representation described in class.
+            On a majority vote tie, choose first attribute value based on attribute domain ordering.
+            Store the tree in the tree attribute.
+            Use attribute indexes to construct default attribute names (e.g. "att0", "att1", ...).
+        """
+        self.X_train = X_train
+        self.y_train = y_train
+        self.header = [f"att{i}" for i in range(len(X_train[0]))]
+        self.attribute_domains = {
+            self.header[i]: list(set(row[i] for row in X_train))
+            for i in range(len(X_train[0]))
+        }
+
+        combined_data = [x + [y] for x, y in zip(X_train, y_train)]
+        self.tree = self.tdidt(combined_data, self.header[:])
+
+    def tdidt_predict(self, tree, instance, header):
+        """
+        Predict the class label for a given instance using a decision tree.
+        Parameters:
+        tree (list): The decision tree represented as a nested list.
+        instance (list): The instance to classify.
+        header (list): The list of attribute names corresponding to the instance.
+        Returns:
+        The predicted class label for the given instance.
+        """
+        # base case: we are at a leaf node and can return the class prediction
+        info_type = tree[0] # "Leaf" or "Attribute"
+        if info_type == "Leaf":
+            return tree[1] # class label
+
+        # if we are here, we are at an Attribute
+        # we need to match the instance's value for this attribute
+        # to the appropriate subtree
+        print(header)
+        print(tree)
+        att_index = header.index(tree[1])
+        for i in range(2, len(tree)):
+            value_list = tree[i]
+            # do we have a match with instance for this attribute?
+            if value_list[1] == instance[att_index]:
+                return self.tdidt_predict(value_list[2], instance, header)
+
+    def predict(self, X_test):
+        """Makes predictions for test instances in X_test.
+        Args:
+            X_test(list of list of obj): The list of testing samples
+                The shape of X_test is (n_test_samples, n_features)
+        Returns:
+            y_predicted(list of obj): The predicted target y values (parallel to X_test)
+        """
+        y_pred = []
+
+        for instance in X_test:
+            y_pred.append(self.tdidt_predict(self.tree, instance, self.header))
+        return y_pred
+
+    def print_decision_rules(self, attribute_names=None, class_name="class"):
+        """Prints the decision rules from the tree in the format
+        "IF att == val AND ... THEN class = label", one rule on each line.
+        Args:
+            attribute_names(list of str or None): A list of attribute names to use in the decision rules
+                (None if a list is not provided and the default attribute names based on indexes
+                (e.g. "att0", "att1", ...) should be used).
+            class_name(str): A string to use for the class name in the decision rules
+                ("class" if a string is not provided and the default name "class" should be used).
+        """
+        if attribute_names is None:
+            attribute_names = self.header
+
+        def traverse(tree, conditions):
+            if tree[0] == "Leaf":
+                # Base case: We've reached a leaf
+                label = tree[1]
+                count = tree[2]
+                total = tree[3]
+                rule = " AND ".join(conditions)
+                print(f"IF {rule} THEN {class_name} = {label} [{count}/{total}]")
+            elif tree[0] == "Attribute":
+                # Recursive case: Traverse each value subtree
+                attribute = attribute_names[self.header.index(tree[1])]
+                for value_subtree in tree[2:]:
+                    value = value_subtree[1]
+                    traverse(value_subtree[2], conditions + [f"{attribute} == {value}"])
+
+        traverse(self.tree, [])
+class MyRandomForestClassifier:
+    def __init__(self, N, M, F):
+        """
+        Initialize the random forest classifier.
+
+        Parameters:
+            N (int): Number of trees to generate.
+            M (int): Number of most accurate trees to select.
+            F (int): Number of attributes to sample at each split.
+        """
+        self.N = N
+        self.M = M
+        self.F = F
+        self.trees = []
+        self.X_train = None
+        self.y_train = None
     def compute_bootstrapped_sample(self, table):
         n = len(table)
         sampled_indexes = [np.random.randint(0, n) for _ in range(n)]
         sample = [table[index] for index in sampled_indexes]
-        out_of_bag_indexes = [index for index in range(n) if index not in sampled_indexes]
+        out_of_bag_indexes = [index for index in list(range(n)) if index not in sampled_indexes]
         out_of_bag_sample = [table[index] for index in out_of_bag_indexes]
         return sample, out_of_bag_sample
 
     def compute_random_subset(self, values, num_values):
-        values_copy = values[:]  
-        np.random.shuffle(values_copy)
+        values_copy = values[:] # shallow copy
+        np.random.shuffle(values_copy) # in place shuffle
         return values_copy[:num_values]
 
     def fit(self, X_train, y_train):
-        # Initialize the MyDecisionTreeClassifier
-        tree_classifier = MyDecisionTreeClassifier()
+        self.X_train = X_train
+        self.y_train = y_train
+        forest = []
 
-        for _ in range(self.n_classifiers):
-            # Create bootstrap sample
-            X_sample, _ = self.compute_bootstrapped_sample(X_train)
-            y_sample, _ = self.compute_bootstrapped_sample(y_train)
+        for _ in range(self.N):
+            # Use the compute_bootstrapped_sample function
+            bootstrapped_sample, out_of_bag_sample = self.compute_bootstrapped_sample(list(zip(X_train, y_train)))
+            X_bootstrap, y_bootstrap = zip(*bootstrapped_sample)
+            X_validation, y_validation = zip(*out_of_bag_sample) if out_of_bag_sample else ([], [])
 
-            # Select random feature subset
-            feature_indices = self.compute_random_subset(list(range(len(X_train[0]))), self.max_features)
-            self.feature_subsets.append(feature_indices)
-
-            # Create a training subset based on the feature indices
-            X_sample_sub = [[row[i] for i in feature_indices] for row in X_sample]
-
-            # Train the decision tree classifier using the tdidt method
-            tree_classifier.X_train = X_sample_sub
-            tree_classifier.y_train = y_sample
-            tree_classifier.header = [str(i) for i in feature_indices]  # Example: header based on indices
-            tree_classifier.attribute_domains = {i: list(set([row[i] for row in X_sample])) for i in feature_indices}
-
-            # Build the tree
-            tree_classifier.tree = tree_classifier.tdidt(X_sample_sub, feature_indices[:])
-
-            # Store the trained tree in the classifiers list
-            self.classifiers.append(tree_classifier.tree)
-
-    def _predict_tree(self, tree, row, feature_indices):
-        # Traverse the decision tree
-        while tree[0] == "Attribute":
-            att_index = feature_indices[int(tree[1])] 
-            value = row[att_index]
-
-            matched = False
-            for i in range(2, len(tree), 2):
-                if tree[i][1] == value: 
-                    tree = tree[i + 1]
-                    matched = True
-                    break
-            if not matched:
-                return None 
-        return tree[1] 
+            # Train a decision tree with a subset of attributes at each split
+            decision_tree = MyDecisionTreeClassifier()
+            decision_tree.header = [f"att{i}" for i in range(len(X_train[0]))]
+            decision_tree.attribute_domains = {f"Attribute {i}": set(row[i] for row in X_train) for i in range(len(X_train[0]))}
+            decision_tree.tree = self.fit_tree(X_bootstrap, y_bootstrap)
 
 
-    def predict(self, X):
+            # Validate the decision tree
+            accuracy = self.validate_tree(decision_tree, X_validation, y_validation)
+            forest.append((decision_tree, accuracy))
+
+        # Select the M most accurate trees
+        forest.sort(key=lambda x: -x[1])  # Sort by accuracy descending
+        self.trees = [tree for tree, _ in forest[:self.M]]
+
+    def fit_tree(self, X_bootstrap, y_bootstrap):
+        tree = MyDecisionTreeClassifier()
+        tree.header = [f"Attribute {i}" for i in range(len(X_bootstrap[0]))]
+        tree.attribute_domains = {f"Attribute {i}": set(row[i] for row in X_bootstrap) for i in range(len(X_bootstrap[0]))}
+        
+        # Use compute_random_subset for selecting attributes
+        attributes = [f"Attribute {i}" for i in range(len(X_bootstrap[0]))]
+        selected_attributes = self.compute_random_subset(attributes, self.F)
+        
+        return tree.tdidt(X_bootstrap, selected_attributes)
+
+    
+    def validate_tree(self, decision_tree, X_validation, y_validation):
+        correct = 0
+        for x, y in zip(X_validation, y_validation):
+            # Use the decision tree's `predict` method to get predictions
+            if decision_tree.predict([x])[0] == y:
+                correct += 1
+        return correct / len(y_validation) if y_validation else 0
+
+    def predict(self, X_test):
         predictions = []
-        for x in X:
-            tree_predictions = []
-            for tree, feature_indices in zip(self.classifiers, self.feature_subsets):
-                prediction = self._predict_tree(tree, x, feature_indices)
-                tree_predictions.append(prediction)
-
-            # Majority vote 
-            prediction = max(set(tree_predictions), key=tree_predictions.count)
-            predictions.append(prediction)
+        for x in X_test:
+            votes = [tree.predict([x])[0] for tree in self.trees]
+            predictions.append(max(set(votes), key=votes.count))
         return predictions
+
 
 
 class MyKNeighborsClassifier:
