@@ -260,6 +260,7 @@ class MyDecisionTreeClassifier:
 
         for instance in X_test:
             y_pred.append(self.tdidt_predict(self.tree, instance, self.header))
+        print(y_pred)
         return y_pred
 
     def print_decision_rules(self, attribute_names=None, class_name="class"):
@@ -325,11 +326,12 @@ class MyRandomForestClassifier:
         self.y_train = y_train
         forest = []
 
-        for _ in range(self.N):
+        for i in range(self.N):
             # Use the compute_bootstrapped_sample function
             bootstrapped_sample, out_of_bag_sample = self.compute_bootstrapped_sample(list(zip(X_train, y_train)))
             X_bootstrap, y_bootstrap = zip(*bootstrapped_sample)
             X_validation, y_validation = zip(*out_of_bag_sample) if out_of_bag_sample else ([], [])
+            # print(out_of_bag_sample)
 
             # Train a decision tree with a subset of attributes at each split
             decision_tree = MyDecisionTreeClassifier()
@@ -340,6 +342,7 @@ class MyRandomForestClassifier:
 
             # Validate the decision tree
             accuracy = self.validate_tree(decision_tree, X_validation, y_validation)
+            print(accuracy)
             forest.append((decision_tree, accuracy))
             # print(decision_tree.tree)
 
@@ -364,6 +367,9 @@ class MyRandomForestClassifier:
         correct = 0
         for x, y in zip(X_validation, y_validation):
             # Use the decision tree's `predict` method to get predictions
+            # print(y)
+            # print(decision_tree.predict([x])) 
+            # print(x)
             if decision_tree.predict([x])[0] == y:
                 correct += 1
         return correct / len(y_validation) if y_validation else 0

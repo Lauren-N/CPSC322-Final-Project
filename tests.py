@@ -379,35 +379,49 @@ def test_random_forest_classifier_fit():
     y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
 
     tree_interview = \
-            ["Attribute", "att0",
-                ["Value", "Junior", 
-                    ["Attribute", "att3",
-                        ["Value", "no", 
-                            ["Leaf", "True", 3, 5]
-                        ],
-                        ["Value", "yes", 
-                            ["Leaf", "False", 2, 5]
-                        ]
-                    ]
-                ],
-                ["Value", "Mid",
-                    ["Leaf", "True", 4, 14]
-                ],
-                ["Value", "Senior",
-                    ["Attribute", "att2",
-                        ["Value", "no",
-                            ["Leaf", "False", 3, 5]
-                        ],
-                        ["Value", "yes",
-                            ["Leaf", "True", 2, 5]
-                        ]
-                    ]
-                ]
+        ['Attribute', 'att3', 
+            ['Value', 'no', 
+                ['Leaf', 'no', 8, 14]
+            ], 
+            ['Value', 'yes', 
+                ['Leaf', 'yes', 6, 14]
             ]
+        ]
+
+
     rf = MyRandomForestClassifier(N=1, M=1, F=4)
     rf.fit(X, y)
-    print(rf.trees[0].tree)
+    # assert rf.trees[0].tree == tree_interview
 
 
 def test_random_forest_classifier_predict():
-    pass
+    # dataset from decision trees
+    header = ["att0", "att1", "att2", "att3"]
+    attribute_domains = {"att0": ["Junior", "Mid", "Senior"], 
+            "att1": ["Java", "Python", "R"],
+            "att2": ["no", "yes"], 
+            "att3": ["no", "yes"]}
+    X = [
+        ["Senior", "Java", "no", "no"],
+        ["Senior", "Java", "no", "yes"],
+        ["Mid", "Python", "no", "no"],
+        ["Junior", "Python", "no", "no"],
+        ["Junior", "R", "yes", "no"],
+        ["Junior", "R", "yes", "yes"],
+        ["Mid", "R", "yes", "yes"],
+        ["Senior", "Python", "no", "no"],
+        ["Senior", "R", "yes", "no"],
+        ["Junior", "Python", "yes", "no"],
+        ["Senior", "Python", "yes", "yes"],
+        ["Mid", "Python", "no", "yes"],
+        ["Mid", "Java", "yes", "no"],
+        ["Junior", "Python", "no", "yes"]
+    ]
+
+    y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
+
+    rf = MyRandomForestClassifier(N=1, M=1, F=4)
+    rf.fit(X, y)
+    prediction = rf.predict([["Senior", "Java", "no", "no"]])
+    
+    assert prediction == ["no"]
