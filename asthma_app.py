@@ -7,19 +7,19 @@ from flask import request, jsonify, redirect
 
 app = Flask(__name__)
 
-@app.route("/")
-def index():
-    # return content and status code
-    return "<h1>Welcome to the Asthma Diagnosis predictor app!</h1>", 200
+# @app.route("/")
+# def index():
+#     # return content and status code
+#     return "<h1>Welcome to the Asthma Diagnosis predictor app!</h1>", 200
 
 @app.route('/', methods = ['GET', 'POST'])
 def index_page():
     prediction = ""
     if request.method == "POST":
-        level = request.form["level"]
-        lang = request.form["lang"]
-        tweets = request.form["tweets"]
-        phd = request.form["phd"]
+        level = request.form.get("level")
+        lang = request.form.get("lang")
+        tweets = request.form.get("tweets")
+        phd = request.form.get("phd")
         prediction = predict_interviews_well([level, lang, tweets, phd])
     print("prediction:", prediction)
     # goes into templates folder and finds given name
