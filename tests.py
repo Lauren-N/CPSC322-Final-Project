@@ -405,8 +405,8 @@ def test_random_forest_classifier_fit():
                 ]
             ]
     rf = MyRandomForestClassifier(N=1, M=1, F=4)
-
     rf.fit(X, y)
+    print(rf.trees[0].tree)
 
 
 def test_random_forest_classifier_predict():

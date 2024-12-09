@@ -216,6 +216,7 @@ class MyDecisionTreeClassifier:
             self.header[i]: list(set(row[i] for row in X_train))
             for i in range(len(X_train[0]))
         }
+        print(self.attribute_domains)
 
         combined_data = [x + [y] for x, y in zip(X_train, y_train)]
         self.tree = self.tdidt(combined_data, self.header[:])
@@ -238,8 +239,8 @@ class MyDecisionTreeClassifier:
         # if we are here, we are at an Attribute
         # we need to match the instance's value for this attribute
         # to the appropriate subtree
-        print(header)
-        print(tree)
+        # print(header)
+        # print(tree)
         att_index = header.index(tree[1])
         for i in range(2, len(tree)):
             value_list = tree[i]
@@ -333,25 +334,27 @@ class MyRandomForestClassifier:
             # Train a decision tree with a subset of attributes at each split
             decision_tree = MyDecisionTreeClassifier()
             decision_tree.header = [f"att{i}" for i in range(len(X_train[0]))]
-            decision_tree.attribute_domains = {f"Attribute {i}": set(row[i] for row in X_train) for i in range(len(X_train[0]))}
+            decision_tree.attribute_domains = {f"att{i}": set(row[i] for row in X_train) for i in range(len(X_train[0]))}
             decision_tree.tree = self.fit_tree(X_bootstrap, y_bootstrap)
 
 
             # Validate the decision tree
             accuracy = self.validate_tree(decision_tree, X_validation, y_validation)
             forest.append((decision_tree, accuracy))
+            # print(decision_tree.tree)
 
         # Select the M most accurate trees
+
         forest.sort(key=lambda x: -x[1])  # Sort by accuracy descending
         self.trees = [tree for tree, _ in forest[:self.M]]
 
     def fit_tree(self, X_bootstrap, y_bootstrap):
         tree = MyDecisionTreeClassifier()
-        tree.header = [f"Attribute {i}" for i in range(len(X_bootstrap[0]))]
-        tree.attribute_domains = {f"Attribute {i}": set(row[i] for row in X_bootstrap) for i in range(len(X_bootstrap[0]))}
+        tree.header = [f"att{i}" for i in range(len(X_bootstrap[0]))]
+        tree.attribute_domains = {f"att{i}": set(row[i] for row in X_bootstrap) for i in range(len(X_bootstrap[0]))}
         
         # Use compute_random_subset for selecting attributes
-        attributes = [f"Attribute {i}" for i in range(len(X_bootstrap[0]))]
+        attributes = [f"att{i}" for i in range(len(X_bootstrap[0]))]
         selected_attributes = self.compute_random_subset(attributes, self.F)
         
         return tree.tdidt(X_bootstrap, selected_attributes)
