@@ -78,13 +78,13 @@
                                     <button type="submit" class="btn btn-outline-primary mt-3 mb-3 p-2 btn1">Predict Asthma Diagnosis!</button>
                                 </div>
                             </div>
-                            {% if prediction %}
-                            {% if prediction == "True" %}
-                                <button type="button" class="btn btn-success mb-4 p-2 btn2">{{ prediction }}</button>
-                            {% elif prediction == "False" %}
-                                <button type="button" class="btn btn-warning mb-4 p-2 btn2">{{ prediction }}</button>
+                            {% if prediction|string() == "True"|string() %}
+                            <button type="button" class="btn btn-success mb-4 p-2 btn2">{{ prediction }}</button>
+
+                            {% elif prediction|string() == "False"|string() %}
+                            <button type="button" class="btn btn-warning  mb-4 p-2 btn2">{{ prediction }}</button>
                             {% else %}
-                                <button type="button" class="btn btn-danger mb-4 p-2 btn2">Error making a prediction</button>
+                            <button type="button" class="btn  mb-4 p-2 btn2"></button>
                             {% endif %}
                         </form>
                  </div>
