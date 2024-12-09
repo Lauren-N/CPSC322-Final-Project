@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Interview Well Prediction App</title>
+    <title>Asthma Diagnosis Predictor App</title>
     <style>
         *{
             padding: 0;
@@ -48,11 +48,11 @@
         <div class="container">
             <div class="row no gutters">
                 <div class="col-lg-5">
-                    <img src="https://content.sportslogos.net/logos/31/691/full/pxl1fzxrw8lbt04ci2mo4kk0p.png" class="img-fluid mt-5" alt="">
+                    <img src="https://content.sportslogos.net/logos/31/691/full/pxl1fzxrw8lbt04ci2mo4kk0p.png" class="img-fluid mt-5" alt="Asthma logo">
                 </div>
                 <div class="col-lg-7 px-5 pt-5">
                     <h1 class="font-weight-bodl py-3">Asthma Diagnosis Predictor</h1>
-                        <form action="/" method="post">
+                        <form action="/predict" method="get">
                             <div class="form-row">
                                 <div class="col-lg-7">
                                     <input type="text" placeholder="BMI" name="BMI" class="form-control my-1 p-2">
@@ -75,16 +75,19 @@
                             </div>
                               <div class="form-row">
                                 <div class="col-lg-7">
-                                    <button type="submit" width="" class="btn btn-outline-primary mt-3 mb-3 p-2 btn1">Predict Interviewed Well!</button>
+                                    <button type="submit" class="btn btn-outline-primary mt-3 mb-3 p-2 btn1">Predict Asthma Diagnosis!</button>
                                 </div>
                             </div>
-                            {% if prediction|string() == "True"|string() %}
-                            <button type="button" class="btn btn-success mb-4 p-2 btn2">{{ prediction }}</button>
-
-                            {% elif prediction|string() == "False"|string() %}
-                            <button type="button" class="btn btn-warning  mb-4 p-2 btn2">{{ prediction }}</button>
+                            {% if prediction %}
+                            {% if prediction == "True" %}
+                                <button type="button" class="btn btn-success mb-4 p-2 btn2">{{ prediction }}</button>
+                            {% elif prediction == "False" %}
+                                <button type="button" class="btn btn-warning mb-4 p-2 btn2">{{ prediction }}</button>
                             {% else %}
-                            <button type="button" class="btn  mb-4 p-2 btn2"></button>
+                                <button type="button" class="btn btn-danger mb-4 p-2 btn2">Error making a prediction</button>
+                            {% endif %}
+                            {% else %}
+                            <button type="button" class="btn mb-4 p-2 btn2">No prediction yet</button>
                             {% endif %}
                         </form>
                  </div>

@@ -7,11 +7,6 @@ from flask import request, jsonify, redirect
 
 app = Flask(__name__)
 
-# @app.route("/")
-# def index():
-#     # return content and status code
-#     return "<h1>Welcome to the Asthma Diagnosis predictor app!</h1>", 200
-
 @app.route('/', methods = ['GET', 'POST'])
 def index_page():
     prediction = ""
@@ -29,7 +24,7 @@ def index_page():
 # def index_page():
 #     prediction = ""
 #     if request.method == "POST":
-#         bmi = request.form.get("BMI") # defaults to None
+#         bmi = request.form.get("BMI")
 #         smoking = request.form.get("Smoking")
 #         pa = request.form.get("PhysicalActivity")
 #         ev1 = request.form.get("LungFunctionFEV1")
@@ -40,38 +35,23 @@ def index_page():
 #     # goes into templates folder and finds given name
 #     return render_template("index.html", prediction=prediction) 
 
-@app.route('/predict', methods=["GET"])
-def predict():
-    level = request.args.get("level")
-    lang = request.args.get("lang")
-    tweets = request.args.get("tweets")
-    phd = request.args.get("phd")
-    
-    prediction = predict_interviews_well([level, lang, tweets, phd])
-    if prediction is not None:
-        # success!
-        result = {"prediction": prediction}
-        return jsonify(result), 200
-    else:
-        return "Error making prediction", 400
-
 # lets add a route for the /predict endpoint
-# @app.route("/predict")
-# def predict():
-#     # lets parse the unseen instance values from the query string
-#     # they are in the request object
-#     bmi = request.args.get("BMI") # defaults to None
-#     smoking = request.args.get("Smoking")
-#     pa = request.args.get("PhysicalActivity")
-#     ev1 = request.args.get("LungFunctionFEV1")
-#     instance = [bmi, smoking, pa, ev1]
-#     header, tree = load_model()
-#     # lets make a prediction!
-#     pred = my_random_forest.predict(instance)
-#     if pred is not None:
-#         return jsonify({"prediction": pred}), 200
-#     # something went wrong!!
-#     return "Error making a prediction", 400
+@app.route("/predict")
+def predict():
+    # lets parse the unseen instance values from the query string
+    # they are in the request object
+    bmi = request.args.get("BMI") # defaults to None
+    smoking = request.args.get("Smoking")
+    pa = request.args.get("PhysicalActivity")
+    ev1 = request.args.get("LungFunctionFEV1")
+    
+    instance = [bmi, smoking, pa, ev1]
+    # lets make a prediction!
+    pred = predict_interviews_well.predict(instance)
+    if pred is not None:
+        return jsonify({"prediction": pred}), 200
+    # something went wrong!!
+    return "Error making a prediction", 400
 
 # recursive
 def tdidt_classifier(tree, header, instance):
