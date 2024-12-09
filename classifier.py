@@ -236,11 +236,6 @@ class MyDecisionTreeClassifier:
         if info_type == "Leaf":
             return tree[1] # class label
 
-        # if we are here, we are at an Attribute
-        # we need to match the instance's value for this attribute
-        # to the appropriate subtree
-        # print(header)
-        # print(tree)
         att_index = header.index(tree[1])
         for i in range(2, len(tree)):
             value_list = tree[i]
@@ -346,12 +341,10 @@ class MyRandomForestClassifier:
             forest.append((decision_tree, accuracy))
             # print(decision_tree.tree)
 
-        # Select the M most accurate trees
-
         forest.sort(key=lambda x: -x[1])  # Sort by accuracy descending
         self.trees = [tree for tree, _ in forest[:self.M]]
 
-        self.trees[0].print_decision_rules()
+        # self.trees[0].print_decision_rules()
 
     def fit_tree(self, X_bootstrap, y_bootstrap):
         tree = MyDecisionTreeClassifier()
