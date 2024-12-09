@@ -260,7 +260,7 @@ class MyDecisionTreeClassifier:
 
         for instance in X_test:
             y_pred.append(self.tdidt_predict(self.tree, instance, self.header))
-        print(y_pred)
+        # print(y_pred)
         return y_pred
 
     def print_decision_rules(self, attribute_names=None, class_name="class"):
@@ -342,7 +342,7 @@ class MyRandomForestClassifier:
 
             # Validate the decision tree
             accuracy = self.validate_tree(decision_tree, X_validation, y_validation)
-            print(accuracy)
+            # print(accuracy)
             forest.append((decision_tree, accuracy))
             # print(decision_tree.tree)
 
@@ -350,6 +350,8 @@ class MyRandomForestClassifier:
 
         forest.sort(key=lambda x: -x[1])  # Sort by accuracy descending
         self.trees = [tree for tree, _ in forest[:self.M]]
+
+        self.trees[0].print_decision_rules()
 
     def fit_tree(self, X_bootstrap, y_bootstrap):
         tree = MyDecisionTreeClassifier()
@@ -366,10 +368,6 @@ class MyRandomForestClassifier:
     def validate_tree(self, decision_tree, X_validation, y_validation):
         correct = 0
         for x, y in zip(X_validation, y_validation):
-            # Use the decision tree's `predict` method to get predictions
-            # print(y)
-            # print(decision_tree.predict([x])) 
-            # print(x)
             if decision_tree.predict([x])[0] == y:
                 correct += 1
         return correct / len(y_validation) if y_validation else 0
