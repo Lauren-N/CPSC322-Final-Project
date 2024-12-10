@@ -375,6 +375,9 @@ class MyRandomForestClassifier:
 
             # adding accuracy to list
             tree_accuracies.append((accuracy,n))
+
+            # tree.print_decision_rules()
+            print()
         
         # finding the most accurate tree
         tree_accuracies.sort(key=lambda x: x[0], reverse=True)
@@ -403,6 +406,7 @@ class MyRandomForestClassifier:
 
             # getting predictions
             all_preds.append(cur_tree.predict(feature_test))
+
 
         # majority vote for each instance
         y_pred = []
