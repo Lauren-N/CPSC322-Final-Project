@@ -234,6 +234,9 @@ class MyDecisionTreeClassifier:
         Returns:
         The predicted class label for the given instance.
         """
+
+        # THINK ISSUE IS HERE
+
         # base case: we are at a leaf node and can return the class prediction
         info_type = tree[0] # "Leaf" or "Attribute"
         if info_type == "Leaf":
@@ -243,6 +246,8 @@ class MyDecisionTreeClassifier:
         for i in range(2, len(tree)):
             value_list = tree[i]
             # do we have a match with instance for this attribute?
+
+            # need to find a way to create a cutoff value
             if value_list[1] == instance[att_index]:
                 return self.tdidt_predict(value_list[2], instance, header)
 

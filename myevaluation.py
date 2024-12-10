@@ -103,7 +103,7 @@ def stratified_kfold_split(X, y, n_splits=5, random_state=None, shuffle=False):
     # Shuffle indices within each class if requested
     if shuffle:
         for indices in class_indices.values():
-            randomize_in_place(indices, random_state=random_state)
+            myutils.randomize_in_place(indices)
 
     # Split indices into stratified folds
     folds = [[] for _ in range(n_splits)]
