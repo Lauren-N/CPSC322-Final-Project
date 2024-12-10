@@ -115,6 +115,10 @@ def remove_cols(table, headers, col_names):
 
     return table, headers
 
+def get_rf_columns(column_indices, data):
+    return [[row[idx] for idx in column_indices] for row in data]
+
+
 # Functions for EDA
 def get_column(table, header, col_name):
     """

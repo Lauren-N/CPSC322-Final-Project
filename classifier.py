@@ -1,4 +1,7 @@
 import numpy as np
+import myevaluation
+import myutils
+from collections import Counter
 
 class MyDecisionTreeClassifier:
     """Represents a decision tree classifier.
@@ -216,7 +219,7 @@ class MyDecisionTreeClassifier:
             self.header[i]: list(set(row[i] for row in X_train))
             for i in range(len(X_train[0]))
         }
-        print(self.attribute_domains)
+        # print(self.attribute_domains)
 
         combined_data = [x + [y] for x, y in zip(X_train, y_train)]
         self.tree = self.tdidt(combined_data, self.header[:])
@@ -287,22 +290,19 @@ class MyDecisionTreeClassifier:
                     traverse(value_subtree[2], conditions + [f"{attribute} == {value}"])
 
         traverse(self.tree, [])
-class MyRandomForestClassifier:
-    def __init__(self, N, M, F):
-        """
-        Initialize the random forest classifier.
 
-        Parameters:
-            N (int): Number of trees to generate.
-            M (int): Number of most accurate trees to select.
-            F (int): Number of attributes to sample at each split.
-        """
+class MyRandomForestClassifier:
+
+    def __init__(self, N, M, F, seed=0):
+        self.X_train = None
+        self.y_train = None
         self.N = N
         self.M = M
         self.F = F
-        self.trees = []
-        self.X_train = None
-        self.y_train = None
+        self.seed = seed
+        self.trees = None
+
+    # ginas function
     def compute_bootstrapped_sample(self, table):
         n = len(table)
         sampled_indexes = [np.random.randint(0, n) for _ in range(n)]
@@ -311,66 +311,103 @@ class MyRandomForestClassifier:
         out_of_bag_sample = [table[index] for index in out_of_bag_indexes]
         return sample, out_of_bag_sample
 
+    # ginas function
     def compute_random_subset(self, values, num_values):
         values_copy = values[:] # shallow copy
         np.random.shuffle(values_copy) # in place shuffle
         return values_copy[:num_values]
 
     def fit(self, X_train, y_train):
+        # set object variables
         self.X_train = X_train
         self.y_train = y_train
-        forest = []
+        N = self.N
+        M = self.M
+        F = self.F
+        np.random.seed(self.seed)
 
-        for i in range(self.N):
-            # Use the compute_bootstrapped_sample function
-            bootstrapped_sample, out_of_bag_sample = self.compute_bootstrapped_sample(list(zip(X_train, y_train)))
-            X_bootstrap, y_bootstrap = zip(*bootstrapped_sample)
-            X_validation, y_validation = zip(*out_of_bag_sample) if out_of_bag_sample else ([], [])
-            # print(out_of_bag_sample)
+        # generating folds to get a random stratified sample!
+        folds = myevaluation.stratified_kfold_split(X_train, y_train, n_splits=10, shuffle=True, random_state=0)
 
-            # Train a decision tree with a subset of attributes at each split
-            decision_tree = MyDecisionTreeClassifier()
-            decision_tree.header = [f"att{i}" for i in range(len(X_train[0]))]
-            decision_tree.attribute_domains = {f"att{i}": set(row[i] for row in X_train) for i in range(len(X_train[0]))}
-            decision_tree.tree = self.fit_tree(X_bootstrap, y_bootstrap)
-
-
-            # Validate the decision tree
-            accuracy = self.validate_tree(decision_tree, X_validation, y_validation)
-            # print(accuracy)
-            forest.append((decision_tree, accuracy))
-            # print(decision_tree.tree)
-
-        forest.sort(key=lambda x: -x[1])  # Sort by accuracy descending
-        self.trees = [tree for tree, _ in forest[:self.M]]
-
-        # self.trees[0].print_decision_rules()
-
-    def fit_tree(self, X_bootstrap, y_bootstrap):
-        tree = MyDecisionTreeClassifier()
-        tree.header = [f"att{i}" for i in range(len(X_bootstrap[0]))]
-        tree.attribute_domains = {f"att{i}": set(row[i] for row in X_bootstrap) for i in range(len(X_bootstrap[0]))}
+        # pick fold in list to use for fit
+        fold=folds[0]
         
-        # Use compute_random_subset for selecting attributes
-        attributes = [f"att{i}" for i in range(len(X_bootstrap[0]))]
-        selected_attributes = self.compute_random_subset(attributes, self.F)
-        
-        return tree.tdidt(X_bootstrap, selected_attributes)
+        test_X=[X_train[x] for x in fold[1]]
+        test_y=[y_train[y] for y in fold[1]]
+        remainder_X=[X_train[x] for x in fold[0]]
+        remainder_y=[y_train[x] for x in fold[0]]
 
-    
-    def validate_tree(self, decision_tree, X_validation, y_validation):
-        correct = 0
-        for x, y in zip(X_validation, y_validation):
-            if decision_tree.predict([x])[0] == y:
-                correct += 1
-        return correct / len(y_validation) if y_validation else 0
+        # list to hold all trees produced
+        all_trees = []
+
+        # to hold accuracies for later
+        tree_accuracies = []
+
+        # generating random trees using bootstrap samples and random subsets
+        for n in range(N):
+            # bootstrapping using ginas function
+            training_X, validation_X = self.compute_bootstrapped_sample(remainder_X)
+            training_y, validation_y = self.compute_bootstrapped_sample(remainder_y)
+
+            # randomly sampling F features to create trees
+            attribute_subset = self.compute_random_subset(list(range(len(training_X[0]))),F)
+            attribute_subset.sort()
+
+            # create decision tree with random subset of features and bootstrapped samples
+            tree = MyDecisionTreeClassifier()
+
+            # getting only columns in random subset to fit in decision trees classifier function
+            tree.fit(myutils.get_rf_columns(attribute_subset,training_X),training_y)
+
+            # appending generated tree to list
+            all_trees.append([tree.tree,attribute_subset])
+
+            # validating tree using stratified sample to compute accuracy to get best tree
+            y_pred=tree.predict(myutils.get_rf_columns(attribute_subset,validation_X))
+
+            # computing accuracy
+            accuracy = myevaluation.accuracy_score(validation_y,y_pred)
+
+            # adding accuracy to list
+            tree_accuracies.append((accuracy,n))
+        
+        # finding the most accurate tree
+        tree_accuracies.sort(key=lambda x: x[0], reverse=True)
+        # sorting trees by accuracy
+        indicies_of_M_trees = [accuracy[1] for accuracy in tree_accuracies[:M]]
+        # setting class variable to hold trees
+        self.trees = [all_trees[i] for i in indicies_of_M_trees]
+
 
     def predict(self, X_test):
-        predictions = []
-        for x in X_test:
-            votes = [tree.predict([x])[0] for tree in self.trees]
-            predictions.append(max(set(votes), key=votes.count))
-        return predictions
+
+        # holds predictions to return
+        all_preds = []
+
+        # predictions from all trees
+        for tree, feature_subset in self.trees:
+            # setting up tree
+            cur_tree = MyDecisionTreeClassifier()
+            cur_tree.tree = tree
+            cur_tree.header = [f"att{i}" for i in feature_subset]
+            cur_tree.attribute_domains = {
+                cur_tree.header[i]: list(set(row[i] for row in self.X_train))
+                for i in range(len(cur_tree.header))
+            }
+            feature_test = myutils.get_rf_columns(feature_subset, X_test)
+
+            # getting predictions
+            all_preds.append(cur_tree.predict(feature_test))
+
+        # majority vote for each instance
+        y_pred = []
+        for i in range(len(X_test)):
+            votes = [preds[i] for preds in all_preds]
+            majority_vote = Counter(votes).most_common(1)[0][0]
+            y_pred.append(majority_vote)
+
+        return y_pred
+
 
 
 

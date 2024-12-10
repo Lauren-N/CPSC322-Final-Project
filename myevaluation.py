@@ -74,6 +74,55 @@ def train_test_split(X, y, test_size=0.33, random_state=None, shuffle=True):
 
     return X_train, X_test, y_train, y_test
 
+def stratified_kfold_split(X, y, n_splits=5, random_state=None, shuffle=False):
+    """Split dataset into stratified cross validation folds.
+
+    Args:
+        X(list of list of obj): The list of instances (samples).
+            The shape of X is (n_samples, n_features)
+        y(list of obj): The target y values (parallel to X).
+            The shape of y is n_samples
+        n_splits(int): Number of folds.
+        random_state(int): integer used for seeding a random number generator for reproducible results
+        shuffle(bool): whether or not to randomize the order of the instances before creating folds
+
+    Returns:
+        folds(list of 2-item tuples): The list of folds where each fold is defined as a 2-item tuple
+            The first item in the tuple is the list of training set indices for the fold
+            The second item in the tuple is the list of testing set indices for the fold
+
+    Notes:
+        Loosely based on sklearn's StratifiedKFold split():
+            https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html#sklearn.model_selection.StratifiedKFold
+    """
+    unique_labels = list(set(y))
+    class_indices = {label: [] for label in unique_labels}
+    for idx, label in enumerate(y):
+        class_indices[label].append(idx)
+
+    # Shuffle indices within each class if requested
+    if shuffle:
+        for indices in class_indices.values():
+            randomize_in_place(indices, random_state=random_state)
+
+    # Split indices into stratified folds
+    folds = [[] for _ in range(n_splits)]
+    for label, indices in class_indices.items():
+        fold_sizes = [len(indices) // n_splits + (1 if i < len(indices) % n_splits else 0) for i in range(n_splits)]
+        start_idx = 0
+        for fold_idx, fold_size in enumerate(fold_sizes):
+            folds[fold_idx].extend(indices[start_idx:start_idx + fold_size])
+            start_idx += fold_size
+
+    # Create train-test splits
+    stratified_folds = []
+    for fold_idx in range(n_splits):
+        test_indices = folds[fold_idx]
+        train_indices = [idx for i, fold in enumerate(folds) if i != fold_idx for idx in fold]
+        stratified_folds.append((train_indices, test_indices))
+
+    return stratified_folds
+
 def kfold_split(X, n_splits=5, random_state=None, shuffle=False):
     """Split dataset into cross validation folds.
 
