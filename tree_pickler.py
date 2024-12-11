@@ -14,32 +14,6 @@ import classifier
 # and unpickle later in your web app code
 
 # let's do this with the interview tree from DecisionTreeFun
-# header = ["level", "lang", "tweets", "phd"]
-# interview_tree_solution =   ["Attribute", "level", 
-#                                 ["Value", "Junior", 
-#                                     ["Attribute", "phd", 
-#                                         ["Value", "yes",
-#                                             ["Leaf", "False", 2, 5]
-#                                         ],
-#                                         ["Value", "no",
-#                                             ["Leaf", "True", 3, 5]
-#                                         ]
-#                                     ]
-#                                 ],
-#                                 ["Value", "Mid",
-#                                     ["Leaf", "True", 4, 14]
-#                                 ],
-#                                 ["Value", "Senior",
-#                                     ["Attribute", "tweets",
-#                                         ["Value", "yes",
-#                                             ["Leaf", "True", 2, 5]
-#                                         ],
-#                                         ["Value", "no",
-#                                             ["Leaf", "False", 3, 5]
-#                                         ]
-#                                     ]
-#                                 ]
-#                             ]
 
 asthma_header = ["BMI", "Smoking", "PhysicalActivity", "LungFunctionFEV1"]
 
