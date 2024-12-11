@@ -15,6 +15,7 @@ import classifier
 
 # let's do this with the interview tree from DecisionTreeFun
 
+
 asthma_header = ["BMI", "Smoking", "PhysicalActivity", "LungFunctionFEV1"]
 
 # Now to generate asthma_trees
