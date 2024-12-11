@@ -99,30 +99,30 @@ def load(name):
     return table
 
 
-def remove_cols(table, headers, col_names):
-    col_indexes = [i for i in range(len(headers)) if headers[i] in col_names]
-
-    # print(col_indexes)
-
-    for row in table:  
-        for i in sorted(col_indexes, reverse=True):
-            del row[i]
-
-
-    for col_name in col_names:
-        headers.remove(col_name)
-
-
-    return table, headers
-
 def get_rf_columns(column_indices, data):
+    """
+    Extracts specified columns from a dataset when fitting tree for random forest
+
+    Args:
+        column_indices (list of int): List of column indices to extract.
+        data (list of list): The dataset from which to extract columns, where each inner list represents a row.
+
+    Returns:
+        list of list: A new dataset containing only the specified columns.
+    """
     return [[row[idx] for idx in column_indices] for row in data]
 
 
 # Functions for EDA
 def get_column(table, header, col_name):
     """
-    returns a column in the table
+    Extracts a column from a table based on the column name.
+    Args:
+        table (list of list): The table from which to extract the column, where each inner list represents a row.
+        header (list): The header row containing the column names.
+        col_name (str): The name of the column to extract.
+    Returns:
+        list: A list containing the values from the specified column.
     """
     col_index = header.index(col_name)
     col = []
@@ -132,9 +132,18 @@ def get_column(table, header, col_name):
     return col
 
 def discretize_bmi(bmi):
+    """
+    Discretizes a list of BMI values into categories: 'normal', 'overweight', and 'obese'.
     # < 25 normal
     # 25-30 overweight
     # > 30 is obese
+
+    Parameters:
+    bmi (list of float): A list of BMI values.
+
+    Returns:
+    list of str: A list of BMI categories corresponding to the input values.
+    """
     for i in range(len(bmi)):
         if bmi[i] < 25.0:
             bmi[i] = 'normal'
@@ -145,9 +154,21 @@ def discretize_bmi(bmi):
     return bmi
 
 def discretize_physicalactivity(physical_activity):
+    """
+    Discretizes a list of physical activity levels into categories.
     # < 2 is inactive
     # 2-5 is active
     # > 5 is very active
+
+    Parameters:
+    physical_activity (list of float): A list of physical activity levels.
+
+    Returns:
+    list of str: A list where each physical activity level is replaced by a category:
+                 'inactive' for levels less than 2.0,
+                 'active' for levels between 2.0 and 5.0,
+                 'very active' for levels greater than 5.0.
+    """
     for i in range(len(physical_activity)):
         if physical_activity[i] < 2.0:
             physical_activity[i] = 'inactive'
@@ -158,11 +179,63 @@ def discretize_physicalactivity(physical_activity):
     return physical_activity
 
 def discretize_lungfunction(lung_function):
+    """
+    Discretizes lung function values into categorical labels.
+
     # < 2.5 poor
     # >= 2.5 good
+
+    Parameters:
+    lung_function (list of float): A list of lung function values.
+
+    Returns:
+    list of str: A list of categorical labels ('poor' or 'good') corresponding to the input values.
+    """
     for i in range(len(lung_function)):
         if lung_function[i] < 2.5:
             lung_function[i] = 'poor'
         else:
             lung_function[i] = 'good'
     return lung_function
+
+def mean(column):
+    """
+    Calculate the mean of a list of numbers.
+
+    Args:
+        column (list): A list of numerical values.
+
+    Returns:
+        float: The mean of the numbers in the list, rounded to 2 decimal places.
+    """
+    return round(sum(column) / len(column), 2)
+
+def stdev(column):
+    """
+    Calculate the standard deviation of a list of numbers.
+
+    Parameters:
+    column (list of float): A list of numerical values.
+
+    Returns:
+    float: The standard deviation of the input list, rounded to 2 decimal places.
+    """
+    mean_value = sum(column) / len(column)
+    variance = sum((x - mean_value) ** 2 for x in column) / len(column)
+    return round(variance ** 0.5, 2)
+
+def mode(column):
+    """
+    Calculate the mode of a list of numbers.
+
+    The mode is the value that appears most frequently in the list. 
+    If there are multiple values with the same frequency, the function 
+    returns the first one encountered. The result is rounded to 2 decimal places.
+
+    Parameters:
+    column (list): A list of numerical values.
+
+    Returns:
+    float: The mode of the list, rounded to 2 decimal places.
+    """
+    return round(max(set(column), key=column.count), 2)
