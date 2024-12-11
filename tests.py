@@ -379,50 +379,114 @@ def test_random_forest_classifier_fit():
     y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
 
     tree_interview = \
-        ['Attribute', 'att3', 
-            ['Value', 'no', 
-                ['Leaf', 'no', 8, 14]
+        [['Attribute', 'att0', 
+            ['Value', 'Junior', 
+                ['Leaf', 'True', 2, 12]
             ], 
-            ['Value', 'yes', 
-                ['Leaf', 'yes', 6, 14]
+            ['Value', 'Mid', 
+                ['Attribute', 'att1', 
+                    ['Value', 'Java', 
+                        ['Leaf', 'True', 1, 5]
+                    ], 
+                    ['Value', 'Python', 
+                        ['Attribute', 'att2', 
+                            ['Value', 'no',
+                                ['Attribute', 'att3', 
+                                    ['Value', 'no', 
+                                        ['Leaf', 'False', 2, 2]
+                                    ], 
+                                    ['Value', 'yes', 
+                                        ['Leaf', 'False', 0, 2]
+                                    ]
+                                ]
+                            ], 
+                            ['Value', 'yes', 
+                                ['Leaf', 'False', 0, 2]
+                            ]
+                        ]
+                    ], 
+                    ['Value', 'R', 
+                        ['Attribute', 'att2',
+                            ['Value', 'no', 
+                                ['Leaf', 'False', 0, 2]
+                            ], 
+                            ['Value', 'yes', 
+                                ['Attribute', 'att3', 
+                                    ['Value', 'no', 
+                                        ['Leaf', 'False', 0, 2]
+                                    ], 
+                                    ['Value', 'yes', 
+                                        ['Leaf', 'False', 2, 2]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ], 
+            ['Value', 'Senior', 
+                ['Attribute', 'att1', 
+                    ['Value', 'Java', 
+                        ['Leaf', 'True', 1, 5]
+                    ], 
+                    ['Value', 'Python', 
+                        ['Leaf', 'True', 2, 5]
+                    ], 
+                    ['Value', 'R', 
+                        ['Attribute', 'att2', 
+                            ['Value', 'no', 
+                                ['Leaf', 'False', 0, 2]
+                            ], 
+                            ['Value', 'yes', 
+                                ['Attribute', 'att3', 
+                                    ['Value', 'no', 
+                                        ['Leaf', 'False', 2, 2]
+                                    ], 
+                                    ['Value', 'yes', 
+                                        ['Leaf', 'False', 0, 2]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
-        ]
+        ], [0, 1, 2, 3]] # keeps track of the attributes used in the tree
+
+    rf = MyRandomForestClassifier(N=1, M=1, F=4, seed = 0)
+    rf.fit(X, y)
+    assert rf.trees[0] == tree_interview
 
 
-    rf = MyRandomForestClassifier()
-    rf.fit(X, y, N=1, M=1, F=4)
-    print(rf.trees[0])
-    # assert rf.trees[0].tree == tree_interview
+def test_random_forest_classifier_predict():
+    # dataset from decision trees
+    header = ["att0", "att1", "att2", "att3"]
+    attribute_domains = {"att0": ["Junior", "Mid", "Senior"], 
+            "att1": ["Java", "Python", "R"],
+            "att2": ["no", "yes"], 
+            "att3": ["no", "yes"]}
+    X = [
+        ["Senior", "Java", "no", "no"],
+        ["Senior", "Java", "no", "yes"],
+        ["Mid", "Python", "no", "no"],
+        ["Junior", "Python", "no", "no"],
+        ["Junior", "R", "yes", "no"],
+        ["Junior", "R", "yes", "yes"],
+        ["Mid", "R", "yes", "yes"],
+        ["Senior", "Python", "no", "no"],
+        ["Senior", "R", "yes", "no"],
+        ["Junior", "Python", "yes", "no"],
+        ["Senior", "Python", "yes", "yes"],
+        ["Mid", "Python", "no", "yes"],
+        ["Mid", "Java", "yes", "no"],
+        ["Junior", "Python", "no", "yes"]
+    ]
 
+    y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
 
-# def test_random_forest_classifier_predict():
-#     # dataset from decision trees
-#     header = ["att0", "att1", "att2", "att3"]
-#     attribute_domains = {"att0": ["Junior", "Mid", "Senior"], 
-#             "att1": ["Java", "Python", "R"],
-#             "att2": ["no", "yes"], 
-#             "att3": ["no", "yes"]}
-#     X = [
-#         ["Senior", "Java", "no", "no"],
-#         ["Senior", "Java", "no", "yes"],
-#         ["Mid", "Python", "no", "no"],
-#         ["Junior", "Python", "no", "no"],
-#         ["Junior", "R", "yes", "no"],
-#         ["Junior", "R", "yes", "yes"],
-#         ["Mid", "R", "yes", "yes"],
-#         ["Senior", "Python", "no", "no"],
-#         ["Senior", "R", "yes", "no"],
-#         ["Junior", "Python", "yes", "no"],
-#         ["Senior", "Python", "yes", "yes"],
-#         ["Mid", "Python", "no", "yes"],
-#         ["Mid", "Java", "yes", "no"],
-#         ["Junior", "Python", "no", "yes"]
-#     ]
-
-#     y = ["False", "False", "True", "True", "True", "False", "True", "False", "True", "True", "True", "True", "True", "False"]
-
-#     rf = MyRandomForestClassifier()
-#     rf.fit(X, y)
-#     prediction = rf.predict([["Senior", "Java", "no", "no"]])
+    rf = MyRandomForestClassifier(N=1, M=1, F=4, seed = 0)
+    rf.fit(X, y)
+    prediction = rf.predict([["Senior", "Java", "no", "no"]])
+    print(prediction)
     
-    # assert prediction == ["no"]
+    assert prediction == ["True"]
