@@ -1,6 +1,5 @@
 Flask
 Gunicorn
 numpy
-copy
 tabulate
 collections
