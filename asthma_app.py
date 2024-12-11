@@ -88,7 +88,6 @@ def rf_predict(trees, header, instance):
 
     # Getting asthma data
     table = myutils.load('asthma_disease_data.csv')
-    headers = header
 
     yes = []
     no = []
