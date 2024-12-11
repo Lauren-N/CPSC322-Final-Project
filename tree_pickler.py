@@ -14,39 +14,39 @@ import classifier
 # and unpickle later in your web app code
 
 # let's do this with the interview tree from DecisionTreeFun
-header = ["level", "lang", "tweets", "phd"]
-interview_tree_solution =   ["Attribute", "level", 
-                                ["Value", "Junior", 
-                                    ["Attribute", "phd", 
-                                        ["Value", "yes",
-                                            ["Leaf", "False", 2, 5]
-                                        ],
-                                        ["Value", "no",
-                                            ["Leaf", "True", 3, 5]
-                                        ]
-                                    ]
-                                ],
-                                ["Value", "Mid",
-                                    ["Leaf", "True", 4, 14]
-                                ],
-                                ["Value", "Senior",
-                                    ["Attribute", "tweets",
-                                        ["Value", "yes",
-                                            ["Leaf", "True", 2, 5]
-                                        ],
-                                        ["Value", "no",
-                                            ["Leaf", "False", 3, 5]
-                                        ]
-                                    ]
-                                ]
-                            ]
+# header = ["level", "lang", "tweets", "phd"]
+# interview_tree_solution =   ["Attribute", "level", 
+#                                 ["Value", "Junior", 
+#                                     ["Attribute", "phd", 
+#                                         ["Value", "yes",
+#                                             ["Leaf", "False", 2, 5]
+#                                         ],
+#                                         ["Value", "no",
+#                                             ["Leaf", "True", 3, 5]
+#                                         ]
+#                                     ]
+#                                 ],
+#                                 ["Value", "Mid",
+#                                     ["Leaf", "True", 4, 14]
+#                                 ],
+#                                 ["Value", "Senior",
+#                                     ["Attribute", "tweets",
+#                                         ["Value", "yes",
+#                                             ["Leaf", "True", 2, 5]
+#                                         ],
+#                                         ["Value", "no",
+#                                             ["Leaf", "False", 3, 5]
+#                                         ]
+#                                     ]
+#                                 ]
+#                             ]
 
 asthma_header = ["BMI", "Smoking", "PhysicalActivity", "LungFunctionFEV1"]
 
 # Now to generate asthma_trees
 # Getting asthma data
 table = myutils.load('asthma_disease_data.csv')
-headers = table.pop(0)
+headers = asthma_header
 
 yes = []
 no = []
@@ -67,13 +67,13 @@ print("\nLoading data from asthma_disease_data.csv file")
 asthma_data = mypytable.MyPyTable()
 asthma_data.load_from_file("asthma_disease_data.csv")
 asthma_data.data = [row[:-1] for row in table]  # Removes last column from every row
-asthma_data.column_names = headers[:-1]
+asthma_data.column_names = asthma_data.column_names[:-1]
 
 # Extract features and target variable as lists
 bmi = list(map(float, asthma_data.get_column('BMI')))  # Convert BMI to float
 bmi = myutils.discretize_bmi(bmi)
-smoking = [1 if x == 'yes' else 0 for x in asthma_data.get_column('Smoking')]  # Encode Smoking
-physical_activity = [1 if x == 'yes' else 0 for x in asthma_data.get_column('PhysicalActivity')]  # Encode PhysicalActivity
+smoking = asthma_data.get_column('Smoking')
+physical_activity = list(map(float, asthma_data.get_column('PhysicalActivity'))) # Encode PhysicalActivity
 physical_activity = myutils.discretize_physicalactivity(physical_activity)
 lung_function = list(map(float, asthma_data.get_column('LungFunctionFEV1')))  # Convert LungFunction to float
 lung_function = myutils.discretize_lungfunction(lung_function)
@@ -89,7 +89,8 @@ my_random_forest.fit(X_data, y_data)
 asthma_trees = my_random_forest.trees
 
 # let's package the two lists together into one object
-packaged_obj = [asthma_header, asthma_trees]
+# packaged_obj = [asthma_header, asthma_trees]
+packaged_obj = [['att0', 'att1', 'att2', 'att3'], asthma_trees]
 outfile = open("tree.p", "wb")
 pickle.dump(packaged_obj, outfile)
 outfile.close()
