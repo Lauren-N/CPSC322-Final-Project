@@ -130,3 +130,39 @@ def get_column(table, header, col_name):
         col.append(row[col_index])
 
     return col
+
+def discretize_bmi(bmi):
+    # < 25 normal
+    # 25-30 overweight
+    # > 30 is obese
+    for i in range(len(bmi)):
+        if bmi[i] < 25.0:
+            bmi[i] = 'normal'
+        elif bmi[i] < 30.0:
+            bmi[i] = 'overweight'
+        else:
+            bmi[i] = 'obese'
+    return bmi
+
+def discretize_physicalactivity(physical_activity):
+    # < 2 is inactive
+    # 2-5 is active
+    # > 5 is very active
+    for i in range(len(physical_activity)):
+        if physical_activity[i] < 2.0:
+            physical_activity[i] = 'inactive'
+        elif physical_activity[i] < 5.0:
+            physical_activity[i] = 'active'
+        else:
+            physical_activity[i] = 'very active'
+    return physical_activity
+
+def discretize_lungfunction(lung_function):
+    # < 2.5 poor
+    # >= 2.5 good
+    for i in range(len(lung_function)):
+        if lung_function[i] < 2.5:
+            lung_function[i] = 'poor'
+        else:
+            lung_function[i] = 'good'
+    return lung_function

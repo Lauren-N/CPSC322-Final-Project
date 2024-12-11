@@ -303,13 +303,18 @@ def binary_precision_score(y_true, y_pred, labels=None, pos_label=None):
         Loosely based on sklearn's precision_score():
             https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
     """
-    # Use utils function to get confusion matrix values
-    matrix_vals = myutils.gen_confusion_matrix_vals_w_pos(y_true, y_pred, labels, pos_label)
-    t_p = matrix_vals[0] # first value in returned list is TP
-    f_p = matrix_vals[1] # second value in returned list is FP
+    # define labels and positive class
+    if labels is None:
+        labels = list(set(y_true))
+    if pos_label is None:
+        pos_label = labels[0]
+    
+    # count true positives and false positives
+    _tp = sum(1 for true, pred in zip(y_true, y_pred) if true == pos_label and pred == pos_label)
+    _fp = sum(1 for true, pred in zip(y_true, y_pred) if true != pos_label and pred == pos_label)
 
-    # Compute precision
-    precision = t_p / (t_p + f_p) if (t_p + f_p) > 0 else 0.0
+    # calculate precision
+    precision = _tp/ (_tp + _fp) if (_tp + _fp) > 0 else 0
 
     return precision
 
